@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ItineraryForm } from "../components/itinerary-form";
 import { ItineraryResults } from "../components/itinerary-results";
 import { LoadingState } from "../components/loading-state";
+import { ChatButton } from "../components/chat-button";
 import { Plane } from "lucide-react";
 
 interface ItineraryData {
@@ -81,6 +82,9 @@ export default function Home() {
           </div>
         </div>
       </main>
+      
+      {/* Chat Button */}
+      <ChatButton />
     </div>
   );
 }

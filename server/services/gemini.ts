@@ -189,6 +189,54 @@ function createStructuredResponse(destination: string, days: number, budget: str
   };
 }
 
+export async function generateChatResponse(message: string, conversation: any[]): Promise<string> {
+  const systemPrompt = `You are a knowledgeable and friendly Travel AI Assistant. Your expertise includes:
+
+- Travel destinations around the world
+- Travel planning and itinerary suggestions
+- Budget travel advice and money-saving tips
+- Best times to visit different places
+- Local customs, culture, and etiquette
+- Transportation options and logistics
+- Packing advice and travel gear
+- Safety tips and travel insurance
+- Food and dining recommendations
+- Hidden gems and off-the-beaten-path locations
+- Travel documentation and visa requirements
+
+Keep your responses:
+- Helpful and informative
+- Enthusiastic about travel
+- Practical and actionable
+- Concise but comprehensive (2-4 sentences usually)
+- Friendly and conversational
+- Include specific recommendations when possible
+
+If asked about non-travel topics, politely redirect the conversation back to travel.`;
+
+  const conversationHistory = conversation
+    .slice(-10) // Keep last 10 messages for context
+    .map(msg => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
+    .join('\n');
+
+  const fullPrompt = `${conversationHistory ? conversationHistory + '\n' : ''}User: ${message}`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        systemInstruction: systemPrompt,
+      },
+      contents: fullPrompt,
+    });
+
+    return response.text || "I'm sorry, I couldn't process that. Could you please rephrase your question?";
+  } catch (error) {
+    console.error("Error generating chat response:", error);
+    return "I'm having trouble connecting right now. Please try asking again in a moment!";
+  }
+}
+
 export async function generateItinerarySummary(destination: string, days: number): Promise<string> {
   const prompt = `Create a brief, engaging summary for a ${days}-day trip to ${destination}. Include key highlights and what makes this destination special. Keep it under 100 words.`;
 

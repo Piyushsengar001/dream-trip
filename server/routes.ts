@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { generateItinerary } from "./services/gemini";
+import { generateItinerary, generateChatResponse } from "./services/gemini";
 import { getWeatherData, formatWeatherForItinerary } from "./services/weather";
 import { getLocationCoordinates } from "./services/maptiler";
 import { tripFormSchema } from "../shared/schema";
@@ -65,6 +65,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching itinerary:", error);
       res.status(500).json({ message: "Failed to fetch itinerary" });
+    }
+  });
+
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { message, conversation } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Generate chat response using Gemini AI
+      const response = await generateChatResponse(message, conversation || []);
+      
+      res.json({ response });
+    } catch (error) {
+      console.error("Error in chat:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to process chat message" 
+      });
     }
   });
 
